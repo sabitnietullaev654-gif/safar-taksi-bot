@@ -1,1 +1,285 @@
+<!DOCTYPE html>
+<html lang="kaa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safar Taksi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--tg-theme-bg-color, #f5f6f8);
+    color: var(--tg-theme-text-color, #1c1c1e);
+    padding: 16px;
+    padding-bottom: 100px;
+  }
+  .header { text-align: center; padding: 16px 0 22px; }
+  .header .icon { font-size: 44px; margin-bottom: 6px; }
+  .header h1 { font-size: 21px; font-weight: 700; }
+  .header p {
+    font-size: 13px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    margin-top: 4px;
+  }
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    margin: 4px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .card {
+    background: var(--tg-theme-secondary-bg-color, #fff);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .route-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1.5px solid #e0e0e5;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .route-option:last-child { margin-bottom: 0; }
+  .route-option.active {
+    border-color: var(--tg-theme-button-color, #2481cc);
+    background: rgba(36,129,204,0.08);
+  }
+  .route-option .check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #d1d1d6;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #fff;
+  }
+  .route-option.active .check {
+    border-color: var(--tg-theme-button-color, #2481cc);
+    background: var(--tg-theme-button-color, #2481cc);
+  }
+  .route-option .text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .route-option .arrow { color: var(--tg-theme-hint-color, #8e8e93); font-weight: 400; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    margin-bottom: 6px;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e5;
+    font-size: 16px;
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #1c1c1e);
+  }
+  input:focus { outline: none; border-color: var(--tg-theme-button-color, #2481cc); }
+  .radio-group { display: flex; gap: 8px; }
+  .radio-option {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1.5px solid #e0e0e5;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .radio-option.active {
+    border-color: var(--tg-theme-button-color, #2481cc);
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e0e0e5;
+    border-radius: 10px;
+    padding: 6px;
+  }
+  .stepper button {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: #f0f0f3;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color, #1c1c1e);
+  }
+  .stepper span { font-size: 17px; font-weight: 700; }
+  .footer-btn {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--tg-theme-bg-color, #f5f6f8);
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: var(--tg-theme-button-color, #2481cc);
+    color: var(--tg-theme-button-text-color, #fff);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--tg-theme-hint-color, #8e8e93);
+    text-align: center;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="icon">🚕</div>
+    <h1>Safar Taksi</h1>
+    <p>Bağdardı saylań hám buyırtpa beriń</p>
+  </div>
+
+  <div class="section-label">Bağdardı saylań</div>
+  <div class="card">
+    <div class="route-option active" data-route="Tashkent - Nokis" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Tashkent <span class="arrow">→</span> Nókis</div>
+    </div>
+    <div class="route-option" data-route="Nokis - Tashkent" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Nókis <span class="arrow">→</span> Tashkent</div>
+    </div>
+    <div class="route-option" data-route="Samarqand - Nokis" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Samarqand <span class="arrow">→</span> Nókis</div>
+    </div>
+    <div class="route-option" data-route="Nokis - Samarqand" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Nókis <span class="arrow">→</span> Samarqand</div>
+    </div>
+    <div class="route-option" data-route="Jizzax - Nokis" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Jizzax <span class="arrow">→</span> Nókis</div>
+    </div>
+    <div class="route-option" data-route="Nokis - Jizzax" onclick="selectRoute(this)">
+      <div class="check">✓</div>
+      <div class="text">Nókis <span class="arrow">→</span> Jizzax</div>
+    </div>
+  </div>
+
+  <div class="section-label">Maǵlıwmatlarıńız</div>
+  <div class="card">
+    <div class="field">
+      <label>Atı-jóni</label>
+      <input type="text" id="fullName" placeholder="Atıńız">
+    </div>
+    <div class="field">
+      <label>Telefon nomeri</label>
+      <input type="tel" id="phone" placeholder="+998 90 123 45 67">
+    </div>
+  </div>
+
+  <div class="section-label">Qosımsha</div>
+  <div class="card">
+    <div class="field">
+      <label>Jolawshılar sanı</label>
+      <div class="stepper">
+        <button onclick="changeSeats(-1)">−</button>
+        <span id="seatsVal">1</span>
+        <button onclick="changeSeats(1)">+</button>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:0;">
+      <label>Ketiw waqtı</label>
+      <div class="radio-group">
+        <div class="radio-option active" onclick="selectTime(this,'now')">Házir</div>
+        <div class="radio-option" onclick="selectTime(this,'today')">Búgin</div>
+        <div class="radio-option" onclick="selectTime(this,'tomorrow')">Erteng</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-btn">
+    <button class="submit-btn" onclick="submitOrder()">Buyırtpa beriw</button>
+    <p class="note">Buyırtpa jiberilgennen keyin, siz benen operator baylanısadı</p>
+  </div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  let selectedRoute = "Tashkent - Nokis";
+  let seats = 1;
+  let departTime = 'now';
+
+  function selectRoute(el) {
+    document.querySelectorAll('.route-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    selectedRoute = el.getAttribute('data-route');
+  }
+
+  function changeSeats(delta) {
+    seats = Math.max(1, Math.min(8, seats + delta));
+    document.getElementById('seatsVal').textContent = seats;
+  }
+
+  function selectTime(el, val) {
+    document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    departTime = val;
+  }
+
+  function submitOrder() {
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!fullName || !phone) {
+      const msg = 'Ótinish, atıńız hám telefon nomerińizdi kiritiń';
+      if (tg) { tg.showAlert(msg); } else { alert(msg); }
+      return;
+    }
+
+    const order = {
+      route: selectedRoute,
+      name: fullName,
+      phone: phone,
+      seats: seats,
+      departTime: departTime,
+      timestamp: new Date().toISOString()
+    };
+
+    if (tg) {
+      tg.sendData(JSON.stringify(order));
+      tg.close();
+    } else {
+      alert('Buyırtpa qabıl etildi:\n' + JSON.stringify(order, null, 2));
+    }
+  }
+</script>
+
+</body>
+</html>
 
